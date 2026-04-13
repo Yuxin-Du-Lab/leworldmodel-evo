@@ -1,2 +1,6 @@
 
 le-wm-main/.venv/
+__pycache__/
+le-wm-main/wandb/
+le-wm-main/outputs/
+.claude/
