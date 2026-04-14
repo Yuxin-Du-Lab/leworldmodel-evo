@@ -85,7 +85,7 @@ def _process_parquet_file_worker(args):
             df = df.head(max_samples_per_file)
 
         episode_files = []
-        for i in range(len(df) - action_horizon + 1): 
+        for i in range(len(df) - action_horizon):
             start_idx = i
             end_idx = i + action_horizon
             

@@ -14,7 +14,7 @@ class JEPA(nn.Module):
         self,
         encoder,
         predictor,
-        action_encoder,
+        text_encoder,
         projector=None,
         pred_proj=None,
     ):
@@ -22,7 +22,7 @@ class JEPA(nn.Module):
 
         self.encoder = encoder
         self.predictor = predictor
-        self.action_encoder = action_encoder
+        self.text_encoder = text_encoder
         self.projector = projector or nn.Identity()
         self.pred_proj = pred_proj or nn.Identity()
 
@@ -39,17 +39,17 @@ class JEPA(nn.Module):
         emb = self.projector(pixels_emb)
         info["emb"] = rearrange(emb, "(b t) d -> b t d", b=b)
 
-        if "action" in info:
-            info["act_emb"] = self.action_encoder(info["action"])
+        if "text" in info:
+            info["text_emb"] = self.text_encoder(info["text"])
 
         return info
 
-    def predict(self, emb, act_emb):
+    def predict(self, emb, cond_emb):
         """Predict next state embedding
         emb: (B, T, D)
-        act_emb: (B, T, A_emb)
+        cond_emb: (B, T, D)
         """
-        preds = self.predictor(emb, act_emb)
+        preds = self.predictor(emb, cond_emb)
         preds = self.pred_proj(rearrange(preds, "b t d -> (b t) d"))
         preds = rearrange(preds, "(b t) d -> b t d", b=emb.size(0))
         return preds

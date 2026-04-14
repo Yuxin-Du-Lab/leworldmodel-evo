@@ -44,7 +44,7 @@ wandb:
 
 wm:
   type: lewm
-  history_size: 3
+  history_size: 1
   num_preds: 1
   embed_dim: 192
 
@@ -55,6 +55,11 @@ predictor:
   dim_head: 64
   dropout: 0.1
   emb_dropout: 0.0
+
+text_encoder:
+  model_name: openai/clip-vit-base-patch32
+  freeze: true
+  max_length: 32
 
 loss:
   sigreg:

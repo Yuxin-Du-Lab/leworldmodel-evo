@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from einops import rearrange
+from transformers import CLIPTextModel, CLIPTokenizer
 
 def modulate(x, shift, scale):
     """AdaLN-zero modulation"""
@@ -212,6 +213,42 @@ class Embedder(nn.Module):
         x = x.permute(0, 2, 1)
         x = self.embed(x)
         return x
+
+
+class CLIPTextConditioner(nn.Module):
+    def __init__(self, model_name: str, output_dim: int, freeze: bool = True, max_length: int = 32):
+        super().__init__()
+        self.tokenizer = CLIPTokenizer.from_pretrained(model_name)
+        self.text_model = CLIPTextModel.from_pretrained(model_name)
+        self.max_length = max_length
+        hidden_size = self.text_model.config.hidden_size
+        self.proj = nn.Sequential(
+            nn.Linear(hidden_size, hidden_size),
+            nn.GELU(),
+            nn.Linear(hidden_size, output_dim),
+        )
+
+        if freeze:
+            self.text_model.eval()
+            for param in self.text_model.parameters():
+                param.requires_grad = False
+
+    def forward(self, texts):
+        device = next(self.proj.parameters()).device
+        tokens = self.tokenizer(
+            texts,
+            padding=True,
+            truncation=True,
+            max_length=self.max_length,
+            return_tensors="pt",
+        )
+        tokens = {k: v.to(device) for k, v in tokens.items()}
+
+        with torch.no_grad():
+            outputs = self.text_model(**tokens)
+            pooled = outputs.pooler_output
+
+        return self.proj(pooled.float())
 
 
 class MLP(nn.Module):
