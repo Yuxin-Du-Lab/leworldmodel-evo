@@ -131,11 +131,16 @@ def run(cfg):
     world_model = build_model(cfg)
 
     run_id = cfg.get('subdir') or ''
-    run_dir = Path(swm.data.utils.get_cache_dir(), run_id)
+    base_dir = (
+        Path(cfg.output_root_dir)
+        if cfg.output_root_dir
+        else Path(swm.data.utils.get_cache_dir())
+    )
+    run_dir = base_dir / run_id if run_id else base_dir
 
     logger = None
     if cfg.wandb.enabled:
-        logger = WandbLogger(**cfg.wandb.config)
+        logger = WandbLogger(save_dir=str(run_dir), **cfg.wandb.config)
         logger.log_hyperparams(OmegaConf.to_container(cfg))
 
     run_dir.mkdir(parents=True, exist_ok=True)

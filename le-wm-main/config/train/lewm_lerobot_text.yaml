@@ -2,6 +2,7 @@ defaults:
   - _self_
 
 output_model_name: lewm_lerobot_text
+output_root_dir: null
 subdir: ${hydra:job.id}
 
 num_workers: 6
