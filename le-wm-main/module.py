@@ -219,7 +219,7 @@ class CLIPTextConditioner(nn.Module):
     def __init__(self, model_name: str, output_dim: int, freeze: bool = True, max_length: int = 32):
         super().__init__()
         self.tokenizer = CLIPTokenizer.from_pretrained(model_name)
-        self.text_model = CLIPTextModel.from_pretrained(model_name)
+        self.text_model = CLIPTextModel.from_pretrained(model_name, use_safetensors=True)
         self.max_length = max_length
         hidden_size = self.text_model.config.hidden_size
         self.proj = nn.Sequential(
