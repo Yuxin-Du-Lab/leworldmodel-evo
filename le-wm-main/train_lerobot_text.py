@@ -1,5 +1,9 @@
 from functools import partial
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT))
 
 import hydra
 import lightning as pl
@@ -154,7 +158,6 @@ def run(cfg):
     trainer = pl.Trainer(
         **cfg.trainer,
         callbacks=[object_dump_callback, checkpoint_callback],
-        num_sanity_val_steps=1,
         logger=logger,
         enable_checkpointing=False,
     )
